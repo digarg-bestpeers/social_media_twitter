@@ -1,0 +1,58 @@
+
+.total-like-color {
+  color: green;
+}
+
+
+.profile-img-size {
+  height: 80px;
+  width: 80px;
+}
+
+
+.body-margin {
+  margin-top: 30px;
+}
+
+
+.jumbotron {
+  background: none ;
+  /*border: 1px;
+  border-color: #eba946;
+  border-style: solid;*/
+}
+
+#body-base {
+  background-image: url("/static/network/images/one.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.navbar-color {
+  background-color: #d8ebe9;
+}
+
+#font-design {
+  font-style: italic;
+  font-family: Book Antiqua;
+}
+
+
+#profile-username {
+  margin: 10px;
+  color: #e36934;
+  font-size: 20px;
+}
+
+
+#profile-detail {
+  font-family: fantasy;
+  font-style: italic;
+  font-weight: 900;
+  color:  #3e403d;
+}
+
+#follow-detail {
+  font-weight: bold;
+
+}

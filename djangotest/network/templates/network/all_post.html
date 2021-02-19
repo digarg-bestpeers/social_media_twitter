@@ -1,0 +1,29 @@
+{% extends "network/layout.html" %}
+
+
+{% block body %}
+
+  {% for post in posts %}
+    <h5 class="text text-primary"><strong>{{post.user | title}}</strong></h5>
+    <p>{{post.body}}</p>
+    <span class="total-like-color">{{post.total_likes}} Likes</span>
+    <p>{{post.created_at}}</p>
+    <hr>
+  {% endfor %}
+
+  <div class="float-right">
+    <span>
+      {% if posts.has_previous %}
+        <a href="?page={{posts.previous_page_number}}">Previous</a>
+      {% endif %}
+        <span><strong>{{posts.number}}</strong></span>
+      {% if posts.has_next %}
+        <a href="?page={{posts.next_page_number}}">Next</a>
+      {% endif %}
+    </span>
+  </div>
+
+{% endblock %}
+
+
+

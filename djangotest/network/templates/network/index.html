@@ -1,0 +1,79 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+
+  {% if request.user.is_authenticated %}
+    <form method="POST">
+      {% csrf_token %}
+
+      {% for field in form %}
+        <strong>{{field.label_tag}}</strong> {{field}} {{field.erros | striptags}}
+      {% endfor %}
+
+      <input type="submit" name="" value="post" class="btn btn-success body-margin" id="save">
+    </form>
+    <br><br>
+    {% for post in posts %}
+      <h5><strong><a href="{% url 'posted_user_profile' post.id %}">{{post.user | title}}</a></strong></h5>
+      <p>{{post.body}}</p>
+      <p>{{post.created_at}}</p>
+      <div id="like-section">
+        {% if request.user in post.likes.all %}
+          <button type="submit" name="post_id" value="" class="btn btn-danger btn-sm like_btn" data={{post.id}} id="change{{post.id}}">Like</button> <span id="postid{{post.id}}">{{post.total_likes}}</span>
+        {% else %}
+          <button type="submit" name="post_id" value="" class="btn btn-info btn-sm like_btn" data={{post.id}} id="change{{post.id}}">Like</button> <span id="postid{{post.id}}">{{post.total_likes}}</span>
+        {% endif %}
+      </div>
+      <br><br><br>
+    {% endfor %}
+    <div class="float-right">
+      <span>
+        {% if posts.has_previous %}
+          <a href="?page={{posts.previous_page_number}}">Previous</a>
+        {% endif %}
+          <span><strong>{{posts.number}}</strong></span>
+        {% if posts.has_next %}
+          <a href="?page={{posts.next_page_number}}">Next</a>
+        {% endif %}
+      </span>
+    </div>
+
+  {% else %}
+    <br><br>
+    <h2 id="font-design"><marquee>Welcome in Network..Need to Login for Use</marquee></h2>
+  {% endif %}
+
+{% endblock %}
+
+
+{% block js %}
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $(".like_btn").click(function(event){
+        event.preventDefault();
+        console.log("button clicked..")
+        let post_id = $(this).attr('data');
+        console.log(post_id)
+
+        $.ajax({
+          url: "{% url 'like' %}",
+          method: "GET",
+          data: {'post_id': post_id},
+          success: function(data){
+              if(data['is_liked'] == true){
+                $('#change'+post_id).removeClass('btn-info');
+                $('#change'+post_id).addClass('btn-danger')
+              }
+              else{
+                $('#change'+post_id).removeClass('btn-danger');
+                $('#change'+post_id).addClass('btn-info')
+              }
+              $("#postid"+post_id).text(data['total'])
+          }
+        })
+      })
+    })
+  </script>
+
+
+{% endblock %}

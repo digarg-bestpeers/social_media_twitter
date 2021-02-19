@@ -1,0 +1,146 @@
+{% extends "network/layout.html" %}
+
+
+{% block body %}
+  <div class="float-right" id="profile-detail">
+      <h5>Full Name: {{user.full_name | title}}</h5>
+      <h5>Email Id: {{user.email}}</h5>
+  </div>
+  <div class="jumbotron">
+      <img class="profile-img-size" src="{{user.user_profile.image.url}}"/> &nbsp
+    {% if user.username == request.user.username %}
+      <a href="{% url 'update_profile' user.id %}" class="btn btn-info">Change Profile</a>
+    {% else %}
+
+    {% if request.user in user.user_profile.follows.all %}
+      <a href="" class="btn btn-danger follow_btn" data="{{user.user_profile.id}}" id="followid{{user.user_profile.id}}">Follow</a>
+    {% else %}
+      <a href="" class="btn btn-info follow_btn" data="{{user.user_profile.id}}" id="followid{{user.user_profile.id}}">Follow</a>
+    {% endif %}
+
+    {% endif %}
+
+    <br>
+    <strong id="profile-username">{{user.username}}</strong>
+    <div>
+        <span class="text font-weight-bold">{{following_count}} Following</span> &nbsp
+        <span class="text text-success font-weight-bold" id="follower-count-id">{{user.user_profile.total_followers}} Followers</span>
+    </div>
+  </div>
+
+  <div>
+    {% for post in posts %}
+      <h5><strong>{{post.user | title}}</strong></h5>
+      <p id="body{{post.id}}">{{post.body}}</p>
+      <div style="display: none;" id="edit-form{{post.id}}">
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="" id="postid{{post.id}}">
+          <input type="textarea" name="" id="id_body{{post.id}}" class="form-control">
+        </form>
+      </div>
+      <span class="total-like-color">{{post.total_likes}} Likes</span>
+      <p>{{post.created_at}}</p>
+
+      {% if user.username == request.user.username %}
+        <button class="btn btn-info btn-sm post-edit" data-id="{{post.id}}" id="editid{{post.id}}">Edit</button>
+        <button class="btn btn-info btn-sm post-save" data-id="{{post.id}}" id="saveid{{post.id}}" style="display: none;">Save</button>
+        <a href="{% url 'delete' post.id %}" class="btn btn-danger btn-sm">Delete</a>
+      {% endif %}
+
+      <hr>
+    {% endfor %}
+    <div class="float-right">
+      <span>
+        {% if posts.has_previous %}
+          <a href="?page={{posts.previous_page_number}}">Previous</a>
+        {% endif %}
+          <span><strong>{{posts.number}}</strong></span>
+        {% if posts.has_next %}
+          <a href="?page={{posts.next_page_number}}">Next</a>
+        {% endif %}
+      </span>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block js %}
+<script type="text/javascript">
+  $(document).on('click', '.post-edit', function(event){
+    event.preventDefault();
+    let post_id = $(this).attr("data-id")
+    $("#body"+post_id).hide();
+    $("#edit-form"+post_id).show();
+    $.ajax({
+      url: "{% url 'update' %}",
+      method: "GET",
+      data: {'post_id': post_id},
+      success: function(data){
+        $("#postid"+data.id).val(data.id)
+        $("#id_body"+data.id).val(data.body)
+        $("#editid"+data.id).hide();
+        $("#saveid"+data.id).show();
+      }
+    })
+
+  })
+</script>
+
+<script type="text/javascript">
+  $(document).on('click', '.post-save', function(event){
+    event.preventDefault();
+    let post_id = $(this).attr("data-id")
+    let body = $("#id_body"+post_id).val()
+    if(body == ""){
+      alert("please write something")
+    }
+
+    else{
+
+      $.ajax({
+      url: "{% url 'update' %}",
+      headers: {'X-CSRFToken': $("input[name=csrfmiddlewaretoken]").val()},
+      method: "POST",
+      data: {"post_id": post_id, "body": body},
+      success: function(data){
+        $("#edit-form"+data.id).hide()
+        $("#body"+data.id).show()
+        $("#body"+data.id).html(data.body)
+        $("#editid"+data.id).show()
+        $("#saveid"+data.id).hide()
+      }
+    })
+    }
+  })
+</script>
+
+<script type="text/javascript">
+  $(document).on('click', '.follow_btn', function(event){
+    event.preventDefault();
+    let user_profile_id = $(this).attr("data")
+
+    $.ajax({
+      url: "{% url 'follow' %}",
+      method: "GET",
+      data: {"user_profile_id": user_profile_id},
+      success: function(data){
+        if(data["is_following"] == true){
+          $("#followid"+data.profile_id).removeClass("btn-info")
+          $("#followid"+data.profile_id).addClass("btn-danger")
+          $("#follower-count-id").html(data.total_followers + ' Followers')
+        }
+        else{
+          $("#followid"+data.profile_id).removeClass("btn-danger")
+          $("#followid"+data.profile_id).addClass("btn-info")
+          $("#follower-count-id").html(data.total_followers + ' Followers')
+        }
+      }
+    })
+  })
+</script>
+
+
+{% endblock %}
+
